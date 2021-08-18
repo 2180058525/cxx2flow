@@ -1,15 +1,23 @@
 use std::vec;
 
 use anyhow::Result;
-use tree_sitter::{Node, Parser};
+// use tree_sitter::{Node, Parser};
 
 use crate::ast::Ast;
 
-pub fn parse(path: &str, function_name: Option<String>) -> Result<Vec<Ast>> {
-    let mut parser = Parser::new();
-    let language = tree_sitter_cpp::language();
-    parser.set_language(language)?;
-    let content = std::fs::read(path)?;
+#[cfg_attr(any(target_arch = "wasm32", target_arch="x86_64"), path = "tree_sitter_wasm.rs")]
+// #[cfg_attr(any(target_arch = "wasm32", target_arch="wasm64"), path = "tree_sitter_wasm.rs")]
+// #[cfg_attr(not(any(target_arch = "wasm32", target_arch="wasm64")), path = "tree_sitter_native.rs")]
+mod treesitter;
+
+#[cfg(not(any(target_arch = "wasm32", target_arch="wasm64")))]
+use treesitter::tree_sitter::Node;
+#[cfg(any(target_arch = "wasm32", target_arch="wasm64"))]
+use treesitter::tree_sitter::SyntaxNode as Node;
+
+
+pub fn parse(content: &[u8], function_name: Option<String>) -> Result<Vec<Ast>> {
+    let mut parser = treesitter::get_treesitter();
     let tree = parser.parse(&content, None).unwrap();
     let mut cursor = tree.walk();
     cursor.goto_first_child();

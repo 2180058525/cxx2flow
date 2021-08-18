@@ -5,6 +5,10 @@ mod dot;
 mod graph;
 mod parser;
 
+#[cfg_attr(any(target_arch = "wasm32", target_arch="wasm64"), path = "tree_sitter_wasm.rs")]
+#[cfg_attr(not(any(target_arch = "wasm32", target_arch="wasm64")), path = "tree_sitter_native.rs")]
+mod treesitter;
+
 fn main() -> anyhow::Result<()> {
     let matches = clap_app!(cxx2flow =>
         (version: "0.1.3")
@@ -28,7 +32,8 @@ EXAMPLES:
     let func = matches.value_of("FUNCTION").map(|x| x.to_string());
     let output = matches.value_of("OUTPUT");
     let curved = matches.is_present("curved");
-    let ast_vec = parser::parse(path, func)?;
+    let content = std::fs::read(path)?;
+    let ast_vec = parser::parse(&content, func)?;
     let graph = graph::from_ast(ast_vec)?;
     let dot = dot::from_graph(&graph, curved)?;
     if let Some(output) = output {
