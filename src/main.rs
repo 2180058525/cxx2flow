@@ -5,8 +5,8 @@ mod dot;
 mod graph;
 mod parser;
 
-#[cfg_attr(any(target_arch = "wasm32", target_arch="wasm64"), path = "tree_sitter_wasm.rs")]
-#[cfg_attr(not(any(target_arch = "wasm32", target_arch="wasm64")), path = "tree_sitter_native.rs")]
+// #[cfg_attr(any(target_arch = "wasm32", target_arch="wasm64"), path = "tree_sitter_wasm.rs")]
+#[path = "tree_sitter_native.rs"]
 mod treesitter;
 
 fn main() -> anyhow::Result<()> {
