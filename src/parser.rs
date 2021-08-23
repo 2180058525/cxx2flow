@@ -1,7 +1,7 @@
 use std::{cell::RefCell, rc::Rc, vec};
 
 use anyhow::Result;
-use tree_sitter::{Node, Parser};
+use tree_sitter_facade::{Node, Parser};
 
 use crate::ast::{Ast, AstNode};
 
@@ -24,11 +24,11 @@ fn filter_ast<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
 }
 
 pub fn parse(path: &str, function_name: Option<String>) -> Result<(Vec<Rc<RefCell<Ast>>>, usize)> {
-    let mut parser = Parser::new();
+    let mut parser = Parser::new()?;
     let language = tree_sitter_cpp::language();
-    parser.set_language(language)?;
+    parser.set_language(&tree_sitter_facade::Language::from(language))?;
     let content = std::fs::read(path)?;
-    let tree = parser.parse(&content, None).unwrap();
+    let tree = parser.parse(&content, None).unwrap().unwrap();
     let mut cursor = tree.walk();
     cursor.goto_first_child();
     let mut functions: Vec<Node> = Vec::new();
@@ -75,7 +75,7 @@ fn parse_stat(
     fa: Option<Rc<RefCell<Ast>>>,
     content: &[u8],
 ) -> Result<Vec<Rc<RefCell<Ast>>>> {
-    match stat.kind() {
+    match stat.kind().to_string().as_str() {
         "compound_statement" => {
             let mut cursor = stat.walk();
             let mut vec: Vec<Rc<RefCell<Ast>>> = Vec::new();
@@ -167,7 +167,7 @@ fn parse_stat(
 }
 
 fn parse_single_stat(id: &mut usize, stat: Node, content: &[u8]) -> Result<Rc<RefCell<Ast>>> {
-    match stat.kind() {
+    match stat.kind().to_string().as_str() {
         "continue_statement" => Ok(Rc::new(RefCell::new(Ast::new(
             id,
             AstNode::Continue("continue".to_string()),
