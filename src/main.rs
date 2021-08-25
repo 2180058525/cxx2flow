@@ -4,6 +4,7 @@ mod ast;
 mod dot;
 mod graph;
 mod parser;
+mod language;
 
 fn main() -> anyhow::Result<()> {
     let matches = clap_app!(cxx2flow =>
@@ -28,7 +29,8 @@ EXAMPLES:
     let func = matches.value_of("FUNCTION").map(|x| x.to_string());
     let output = matches.value_of("OUTPUT");
     let curved = matches.is_present("curved");
-    let (ast_vec, maxid) = parser::parse(path, func)?;
+    let content = std::fs::read(path)?;
+    let (ast_vec, maxid) = futures::executor::block_on(parser::parse(&content, func))?;
     // dbg!(&ast_vec);
     let graph = graph::from_ast(ast_vec, maxid)?;
     // dbg!(&graph);

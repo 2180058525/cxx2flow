@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc, vec};
 use anyhow::Result;
 use tree_sitter_facade::{Node, Parser};
 
-use crate::ast::{Ast, AstNode};
+use crate::{ast::{Ast, AstNode}, language::{self, get_lang}};
 
 fn filter_ast<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
     if node.kind() == kind {
@@ -23,11 +23,10 @@ fn filter_ast<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
     None
 }
 
-pub fn parse(path: &str, function_name: Option<String>) -> Result<(Vec<Rc<RefCell<Ast>>>, usize)> {
+pub async fn parse(content: &[u8], function_name: Option<String>) -> Result<(Vec<Rc<RefCell<Ast>>>, usize)> {
     let mut parser = Parser::new()?;
-    let language = tree_sitter_cpp::language();
-    parser.set_language(&tree_sitter_facade::Language::from(language))?;
-    let content = std::fs::read(path)?;
+    let lang = get_lang().await;
+    parser.set_language(&lang)?;
     let tree = parser.parse(&content, None).unwrap().unwrap();
     let mut cursor = tree.walk();
     cursor.goto_first_child();
