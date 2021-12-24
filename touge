@@ -1,0 +1,81 @@
+#include<stdio.h>
+#include"string.h" 
+#include"stdlib.h"
+int n;
+struct list {
+    int num;
+    char name[10];
+    int a, b, c, d;
+    float sum;
+    struct list* next;
+}*headp, *p=NULL;
+struct list* creatlist(int n)
+{
+    struct list* head, * node, * end;
+    head = (struct list*)malloc(sizeof(struct list));
+    end = head;
+    for (int i = 0; i < n; i++)
+    {
+        node = (struct list*)malloc(sizeof(struct list));
+        scanf("%d%s%d%d%d%d", &node->num, node->name, &node->a, &node->b, &node->c, &node->d);
+        node->sum = node->a + node->b + node->c + node->d;
+        end->next = node;
+        end = node;
+    }
+    end->next = NULL;
+    return head;
+}
+void modify(int n)
+{
+    p = headp;
+    int a, b;
+    scanf("%d%d", &a, &b);
+    for (int i = 0; i < n; i++)
+    {
+        p = p->next;
+        if (p->num == a)
+        {
+            switch (b) {
+            case 0:scanf("%s", p->name); break;
+            case 1:scanf("%d", &p->a); break;
+            case 2:scanf("%d", &p->b); break;
+            case 3:scanf("%d", &p->c); break;
+            case 4:scanf("%d", &p->d); break;
+            }
+            printf("%d %s %d %d %d %d\n", p->num, p->name, p->a, p->b, p->c, p->d);
+        }
+    }
+}
+int main()
+{
+    int m;
+    while(scanf("%d", &m)!=EOF)
+    switch (m) 
+    {
+    case 0:return 0;
+    case 1:
+        scanf("%d", &n);
+        headp = creatlist(n);
+        printf("完成了%d位同学的成绩输入。\n",n); break;
+    case 2: p = headp;
+        for (int i = 0; i < n; i++)
+        {
+            p = p->next;
+            printf("%d %s %d %d %d %d\n", p->num, p->name, p->a, p->b, p->c, p->d);
+        }break;
+    case 3:modify(n);
+        break;
+    case 4:p = headp;
+        for (int i = 0; i < n; i++)
+        {
+            p = p->next;
+            printf("%d %s %.2f\n", p->num, p->name, (p->sum) / 4);
+        }break;
+    case 5:p = headp;
+        for (int i = 0; i < n; i++)
+        {
+            p = p->next;
+            printf("%d %s %d %d %d %d %.0f %.2f\n", p->num, p->name, p->a, p->b, p->c, p->d, p->sum, (p->sum) / 4);
+        }break;
+    }
+}
